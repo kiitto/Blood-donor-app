@@ -27,9 +27,21 @@ class SeedData {
       _Seed('Arjun Reddy', 'B-', 'Pune, Maharashtra', '9876543206', '2025-12-12'),
     ];
 
-    for (var i = 0; i < seeds.length; i++) {
+    // Idempotency guard: if the meta flag never got set but seeds already
+    // exist under seed@community.local (crash between writes), skip rather
+    // than double-insert.
+    final existingSeed = repo
+        .all()
+        .where((d) => d.ownerEmail == 'seed@community.local')
+        .toList();
+    if (existingSeed.length >= seeds.length) {
+      await meta.put(_flag, true);
+      return;
+    }
+
+    for (var i = existingSeed.length; i < seeds.length; i++) {
       final s = seeds[i];
-      final id = IdGenerator.donor();
+      final id = await IdGenerator.donor();
       final token = DonorToken(
         id: id,
         ownerEmail: 'seed@community.local',

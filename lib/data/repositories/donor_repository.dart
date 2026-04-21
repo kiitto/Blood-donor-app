@@ -32,8 +32,9 @@ class DonorRepository {
     required String phone,
     String lastDonationDate = '',
   }) async {
+    final id = await IdGenerator.donor();
     final token = DonorToken(
-      id: IdGenerator.donor(),
+      id: id,
       ownerEmail: ownerEmail.toLowerCase(),
       name: name,
       bloodGroup: bloodGroup,

@@ -17,12 +17,31 @@ import '../../state/receiver_provider.dart';
 import '../../state/request_provider.dart';
 import 'donor_status_screen.dart';
 
-class DonorTokenRequestsScreen extends StatelessWidget {
+class DonorTokenRequestsScreen extends StatefulWidget {
   final DonorToken token;
   const DonorTokenRequestsScreen({super.key, required this.token});
 
   @override
+  State<DonorTokenRequestsScreen> createState() =>
+      _DonorTokenRequestsScreenState();
+}
+
+class _DonorTokenRequestsScreenState extends State<DonorTokenRequestsScreen> {
+  String? _busyRequestId;
+
+  Future<void> _run(String id, Future<void> Function() op) async {
+    if (_busyRequestId != null) return;
+    setState(() => _busyRequestId = id);
+    try {
+      await op();
+    } finally {
+      if (mounted) setState(() => _busyRequestId = null);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final token = widget.token;
     final requests = context.watch<RequestProvider>().forDonorToken(token.id);
     final receiverProv = context.watch<ReceiverProvider>();
 
@@ -82,14 +101,15 @@ class DonorTokenRequestsScreen extends StatelessWidget {
                         child: _PendingRequestCard(
                           request: r,
                           receiver: receiverProv.byId(r.receiverTokenId),
-                          onAccept: () async {
+                          busy: _busyRequestId == r.id,
+                          onAccept: () => _run(r.id, () async {
                             await context
                                 .read<RequestProvider>()
                                 .advance(r.id, RequestStatus.accepted);
-                          },
-                          onDecline: () async {
+                          }),
+                          onDecline: () => _run(r.id, () async {
                             await context.read<RequestProvider>().decline(r.id);
-                          },
+                          }),
                         ),
                       )),
                 ],
@@ -182,11 +202,13 @@ class _PendingRequestCard extends StatelessWidget {
   final ReceiverToken? receiver;
   final VoidCallback onAccept;
   final VoidCallback onDecline;
+  final bool busy;
   const _PendingRequestCard({
     required this.request,
     required this.receiver,
     required this.onAccept,
     required this.onDecline,
+    required this.busy,
   });
 
   @override
@@ -219,14 +241,15 @@ class _PendingRequestCard extends StatelessWidget {
                 child: AppButton(
                   label: 'Decline',
                   kind: AppButtonKind.ghost,
-                  onPressed: onDecline,
+                  onPressed: busy ? null : onDecline,
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: AppButton(
-                  label: 'Accept',
-                  onPressed: onAccept,
+                  label: busy ? 'Saving' : 'Accept',
+                  loading: busy,
+                  onPressed: busy ? null : onAccept,
                 ),
               ),
             ],

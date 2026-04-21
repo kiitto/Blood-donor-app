@@ -31,8 +31,9 @@ class ReceiverRepository {
     String causeOther = '',
     required int unitsNeeded,
   }) async {
+    final id = await IdGenerator.receiver();
     final token = ReceiverToken(
-      id: IdGenerator.receiver(),
+      id: id,
       ownerEmail: ownerEmail.toLowerCase(),
       name: name,
       bloodGroup: bloodGroup,

@@ -56,8 +56,9 @@ class RequestRepository {
     required String senderEmail,
     required String recipientEmail,
   }) async {
+    final id = await IdGenerator.request();
     final req = BloodRequest(
-      id: IdGenerator.request(),
+      id: id,
       donorTokenId: donorTokenId,
       receiverTokenId: receiverTokenId,
       senderEmail: senderEmail.toLowerCase(),
@@ -73,13 +74,17 @@ class RequestRepository {
   Future<BloodRequest> updateStatus(String id, RequestStatus status) async {
     final existing = byId(id);
     if (existing == null) throw StateError('Request not found: $id');
-    final updated = existing.copyWith(status: status, updatedAt: DateTime.now());
-    await HiveBoxes.requestsBox().put(id, updated.toMap());
 
     // Acceptance closes the donor token so it drops off the search list.
+    // Close the donor first: if the request write then fails, the worst case
+    // is a closed token with no accepted request (recoverable); the inverse
+    // (accepted request + open donor in search list) is harder to repair.
     if (status == RequestStatus.accepted) {
       await _donorRepo.closeOnAcceptance(existing.donorTokenId, existing.id);
     }
+
+    final updated = existing.copyWith(status: status, updatedAt: DateTime.now());
+    await HiveBoxes.requestsBox().put(id, updated.toMap());
     return updated;
   }
 

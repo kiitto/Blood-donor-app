@@ -20,7 +20,9 @@ class BloodGroupSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label.toUpperCase(), style: AppText.label()),
+        Text(label,
+            style: AppText.caption(color: AppColors.inkMuted, size: 12)
+                .copyWith(fontWeight: FontWeight.w500)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,

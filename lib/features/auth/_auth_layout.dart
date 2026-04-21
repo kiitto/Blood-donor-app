@@ -70,15 +70,15 @@ class AuthLayout extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 12),
                               Text(
                                 title,
-                                textAlign: TextAlign.center,
+                                textAlign: TextAlign.start,
                                 style: AppText.display(
-                                        size: 44, color: AppColors.onMaroon)
+                                        size: 38, color: AppColors.onMaroon)
                                     .copyWith(letterSpacing: -0.5),
                               ),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 28),
                               child,
                               const SizedBox(height: 20),
                               footer,

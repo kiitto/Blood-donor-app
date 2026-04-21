@@ -14,9 +14,16 @@ import '../../state/donor_provider.dart';
 import '../../state/receiver_provider.dart';
 import '../../state/request_provider.dart';
 
-class DonorStatusScreen extends StatelessWidget {
+class DonorStatusScreen extends StatefulWidget {
   final String requestId;
   const DonorStatusScreen({super.key, required this.requestId});
+
+  @override
+  State<DonorStatusScreen> createState() => _DonorStatusScreenState();
+}
+
+class _DonorStatusScreenState extends State<DonorStatusScreen> {
+  bool _busy = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +31,7 @@ class DonorStatusScreen extends StatelessWidget {
     final donorProv = context.watch<DonorProvider>();
     final rcvProv = context.watch<ReceiverProvider>();
 
-    final req = reqProv.byId(requestId);
+    final req = reqProv.byId(widget.requestId);
     if (req == null) {
       return const _MissingRequestScaffold();
     }
@@ -49,75 +56,90 @@ class DonorStatusScreen extends StatelessWidget {
             title: 'Donor Status',
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 32),
-              children: [
-                CardShell(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 32),
+                  children: [
+                    CardShell(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TokenIdChip(id: req.id),
-                          const Spacer(),
-                          if (donor != null)
-                            Text(donor.bloodGroup,
-                                style: AppText.monoTag(color: AppColors.maroon)),
+                          Row(
+                            children: [
+                              TokenIdChip(id: req.id),
+                              const Spacer(),
+                              if (donor != null)
+                                Text(donor.bloodGroup,
+                                    style: AppText.monoTag(
+                                        color: AppColors.maroon)),
+                            ],
+                          ),
+                          const Hairline(margin: EdgeInsets.symmetric(vertical: 12)),
+                          DetailRow(
+                            label: 'Patient',
+                            value: receiver?.name ?? '—',
+                            strong: true,
+                          ),
+                          DetailRow(
+                            label: 'Phone',
+                            value: receiver == null ? '—' : '+91 ${receiver.phone}',
+                          ),
+                          DetailRow(
+                            label: 'Units',
+                            value: receiver == null
+                                ? '—'
+                                : receiver.unitsNeeded.toString(),
+                          ),
+                          DetailRow(
+                            label: 'Location',
+                            value: receiver?.location ?? '—',
+                          ),
                         ],
                       ),
-                      const Hairline(margin: EdgeInsets.symmetric(vertical: 12)),
-                      DetailRow(
-                        label: 'Patient',
-                        value: receiver?.name ?? '—',
-                        strong: true,
-                      ),
-                      DetailRow(
-                        label: 'Phone',
-                        value: receiver == null ? '—' : '+91 ${receiver.phone}',
-                      ),
-                      DetailRow(
-                        label: 'Units',
-                        value: receiver == null
-                            ? '—'
-                            : receiver.unitsNeeded.toString(),
-                      ),
-                      DetailRow(
-                        label: 'Location',
-                        value: receiver?.location ?? '—',
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text('PROGRESS', style: AppText.label()),
-                const SizedBox(height: 14),
-                StatusTracker(steps: steps),
-                const SizedBox(height: 30),
-                if (next != null)
-                  AppButton(
-                    label: next.label,
-                    onPressed: () async {
-                      await context
-                          .read<RequestProvider>()
-                          .advance(req.id, next.status);
-                      if (next.status == RequestStatus.completed &&
-                          context.mounted) {
-                        Navigator.of(context).maybePop();
-                      }
-                    },
-                  ),
-                if (req.status == RequestStatus.completed)
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    color: AppColors.surfaceMuted,
-                    child: Text(
-                      'This donation is complete. Thank you for saving a life.',
-                      style: AppText.body(color: AppColors.success, size: 14)
-                          .copyWith(fontWeight: FontWeight.w600),
                     ),
-                  ),
-              ],
+                    const SizedBox(height: 24),
+                    Text('Progress', style: AppText.title(size: 15)),
+                    const SizedBox(height: 14),
+                    StatusTracker(steps: steps),
+                    const SizedBox(height: 30),
+                    if (next != null)
+                      AppButton(
+                        label: _busy ? 'Saving' : next.label,
+                        loading: _busy,
+                        onPressed: _busy
+                            ? null
+                            : () async {
+                                setState(() => _busy = true);
+                                try {
+                                  await context
+                                      .read<RequestProvider>()
+                                      .advance(req.id, next.status);
+                                  if (next.status == RequestStatus.completed &&
+                                      context.mounted) {
+                                    Navigator.of(context).maybePop();
+                                    return;
+                                  }
+                                } finally {
+                                  if (mounted) setState(() => _busy = false);
+                                }
+                              },
+                      ),
+                    if (req.status == RequestStatus.completed)
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        color: AppColors.surfaceMuted,
+                        child: Text(
+                          'This donation is complete. Thank you for saving a life.',
+                          style: AppText.body(color: AppColors.success, size: 14)
+                              .copyWith(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],

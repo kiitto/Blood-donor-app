@@ -51,3 +51,8 @@ npm-debug.log*
 *.tmp
 *.swp
 *.bak
+
+# Built APKs at project root (too big for GitHub; keep local only)
+*.apk
+*.aab
+*.apk.sha1

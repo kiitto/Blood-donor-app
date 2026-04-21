@@ -41,11 +41,11 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   void initState() {
     super.initState();
-    final user = context.read<AuthProvider>().current!;
-    _name = TextEditingController(text: user.name);
-    _phone = TextEditingController(text: user.phone);
-    _dob = TextEditingController(text: user.dob);
-    _location = TextEditingController(text: user.location);
+    final user = context.read<AuthProvider>().current;
+    _name = TextEditingController(text: user?.name ?? '');
+    _phone = TextEditingController(text: user?.phone ?? '');
+    _dob = TextEditingController(text: user?.dob ?? '');
+    _location = TextEditingController(text: user?.location ?? '');
   }
 
   @override
@@ -59,17 +59,21 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
 
   Future<void> _pickDob() async {
     final now = DateTime.now();
+    final first = DateTime(now.year - 90);
+    final last = DateTime(now.year - 16, now.month, now.day);
     DateTime initial;
     try {
       initial = DateFormat('dd/MM/yyyy').parseStrict(_dob.text);
     } catch (_) {
       initial = DateTime(now.year - 25);
     }
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(last)) initial = last;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(now.year - 90),
-      lastDate: DateTime(now.year - 16, now.month, now.day),
+      firstDate: first,
+      lastDate: last,
     );
     if (picked != null) {
       _dob.text = DateFormat('dd/MM/yyyy').format(picked);

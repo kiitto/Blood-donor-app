@@ -59,12 +59,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Future<void> _pickDob() async {
     final now = DateTime.now();
-    final initial = _parseDate(_dob.text) ?? DateTime(now.year - 25);
+    final first = DateTime(now.year - 90);
+    final last = DateTime(now.year - 16, now.month, now.day);
+    var initial = _parseDate(_dob.text) ?? DateTime(now.year - 25);
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(last)) initial = last;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(now.year - 90),
-      lastDate: DateTime(now.year - 16, now.month, now.day),
+      firstDate: first,
+      lastDate: last,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: Theme.of(context).colorScheme.copyWith(

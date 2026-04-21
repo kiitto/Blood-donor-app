@@ -60,35 +60,39 @@ class _SplashScreenState extends State<SplashScreen> {
             painter: _SplashBackdropPainter(),
           ),
           SafeArea(
-            child: Center(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(32, 0, 32, 48),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      color: AppColors.red,
-                      borderRadius: BorderRadius.all(Radius.circular(2)),
-                    ),
-                    child: const BloodDrop(size: 44, color: AppColors.onMaroon),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: const BoxDecoration(
+                          color: AppColors.red,
+                          borderRadius: BorderRadius.all(Radius.circular(2)),
+                        ),
+                        child: const BloodDrop(size: 28, color: AppColors.onMaroon),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 26),
                   Text(
-                    'BLOOD DONOR',
-                    style: AppText.display(size: 30, color: AppColors.ink)
-                        .copyWith(letterSpacing: 3.0, height: 1.0),
+                    'Blood Donor',
+                    style: AppText.display(size: 44, color: AppColors.ink)
+                        .copyWith(height: 1.0),
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    'RECEIVER',
-                    style: AppText.display(size: 30, color: AppColors.ink)
-                        .copyWith(letterSpacing: 3.0, height: 1.0),
+                    '& Receiver.',
+                    style: AppText.display(size: 44, color: AppColors.maroon)
+                        .copyWith(height: 1.05),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 18),
                   Text(
-                    "Be someone's lifeline today",
-                    style: AppText.body(color: AppColors.inkMuted, size: 14)
-                        .copyWith(fontStyle: FontStyle.italic),
+                    "Be someone's lifeline today.",
+                    style: AppText.body(color: AppColors.inkMuted, size: 15),
                   ),
                 ],
               ),
@@ -106,35 +110,12 @@ class _SplashBackdropPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Top-left deep bloom
+    // Single deep bloom in the top-right quadrant — enough silhouette to
+    // feel intentional without the five-circle AI-decor cluster.
     canvas.drawCircle(
-      Offset(-w * 0.12, -h * 0.02),
-      w * 0.52,
+      Offset(w * 1.05, -h * 0.06),
+      w * 0.55,
       Paint()..color = AppColors.maroonDeep,
-    );
-    // Top-right medium dot
-    canvas.drawCircle(
-      Offset(w * 0.88, h * 0.02),
-      w * 0.12,
-      Paint()..color = AppColors.maroon,
-    );
-    // Bottom dominant bloom
-    canvas.drawCircle(
-      Offset(w * 0.75, h * 1.05),
-      w * 0.65,
-      Paint()..color = AppColors.maroonDeep,
-    );
-    // Bottom-left medium dot
-    canvas.drawCircle(
-      Offset(w * 0.1, h * 0.92),
-      w * 0.10,
-      Paint()..color = AppColors.maroon,
-    );
-    // Tiny floater for balance
-    canvas.drawCircle(
-      Offset(w * 0.42, h * 0.88),
-      w * 0.04,
-      Paint()..color = AppColors.red,
     );
   }
 

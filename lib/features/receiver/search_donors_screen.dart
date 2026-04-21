@@ -114,7 +114,16 @@ class _SearchDonorsScreenState extends State<SearchDonorsScreen> {
                         receiver: receiver,
                         existingRequestId: existing?.id,
                         onSend: () async {
-                          final user = context.read<AuthProvider>().current!;
+                          final user = context.read<AuthProvider>().current;
+                          if (user == null) return;
+                          // Re-check inside onSend in case user double-taps:
+                          // activeBetween is read in build, so a stale card
+                          // could try to send twice on the same pair.
+                          final already = context.read<RequestProvider>().activeBetween(
+                                donorTokenId: d.id,
+                                receiverTokenId: receiver.id,
+                              );
+                          if (already != null) return;
                           final req = await context.read<RequestProvider>().send(
                                 donorTokenId: d.id,
                                 receiverTokenId: receiver.id,

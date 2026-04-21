@@ -53,8 +53,10 @@ class AppTextField extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label.toUpperCase(), style: AppText.label()),
-          const SizedBox(height: 6),
+          Text(label,
+              style: AppText.caption(color: AppColors.inkMuted, size: 12)
+                  .copyWith(fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

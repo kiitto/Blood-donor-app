@@ -14,9 +14,16 @@ import '../../state/donor_provider.dart';
 import '../../state/receiver_provider.dart';
 import '../../state/request_provider.dart';
 
-class ReceiverStatusScreen extends StatelessWidget {
+class ReceiverStatusScreen extends StatefulWidget {
   final String requestId;
   const ReceiverStatusScreen({super.key, required this.requestId});
+
+  @override
+  State<ReceiverStatusScreen> createState() => _ReceiverStatusScreenState();
+}
+
+class _ReceiverStatusScreenState extends State<ReceiverStatusScreen> {
+  bool _busy = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,14 +31,12 @@ class ReceiverStatusScreen extends StatelessWidget {
     final donorProv = context.watch<DonorProvider>();
     final rcvProv = context.watch<ReceiverProvider>();
 
-    final req = reqProv.byId(requestId);
+    final req = reqProv.byId(widget.requestId);
     if (req == null) return const _MissingRequestScaffold();
 
     final donor = donorProv.byId(req.donorTokenId);
     final receiver = rcvProv.byId(req.receiverTokenId);
 
-    // 4-step receiver view: Request sent → Accepted → Blood arranged → Received.
-    // We don't expose the donor's "contacted" stage here because it's donor-internal.
     final steps = <StatusStep>[
       StatusStep('Request sent', _sentState(req.status)),
       StatusStep('Request accepted', _stateAt(req.status, 0)),
@@ -48,59 +53,64 @@ class ReceiverStatusScreen extends StatelessWidget {
             title: 'Receiver Status',
           ),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(20, 22, 20, 32),
-              children: [
-                CardShell(
-                  padding: const EdgeInsets.all(18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 32),
+                  children: [
+                    CardShell(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          TokenIdChip(id: req.id),
-                          const Spacer(),
-                          Text(
-                            _badge(req.status),
-                            style: AppText.caption(color: _badgeColor(req.status))
-                                .copyWith(fontWeight: FontWeight.w600),
+                          Row(
+                            children: [
+                              TokenIdChip(id: req.id),
+                              const Spacer(),
+                              Text(
+                                _badge(req.status),
+                                style: AppText.caption(color: _badgeColor(req.status))
+                                    .copyWith(fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                          const Hairline(margin: EdgeInsets.symmetric(vertical: 12)),
+                          DetailRow(
+                            label: 'Donor',
+                            value: donor?.name ?? '—',
+                            strong: true,
+                          ),
+                          DetailRow(
+                            label: 'Blood group',
+                            value: donor?.bloodGroup ?? '—',
+                          ),
+                          DetailRow(
+                            label: 'Contact',
+                            value: donor == null ? '—' : '+91 ${donor.phone}',
+                          ),
+                          DetailRow(
+                            label: 'Units',
+                            value: receiver == null
+                                ? '—'
+                                : receiver.unitsNeeded.toString(),
+                          ),
+                          DetailRow(
+                            label: 'Patient',
+                            value: receiver?.name ?? '—',
                           ),
                         ],
                       ),
-                      const Hairline(margin: EdgeInsets.symmetric(vertical: 12)),
-                      DetailRow(
-                        label: 'Donor',
-                        value: donor?.name ?? '—',
-                        strong: true,
-                      ),
-                      DetailRow(
-                        label: 'Blood group',
-                        value: donor?.bloodGroup ?? '—',
-                      ),
-                      DetailRow(
-                        label: 'Contact',
-                        value: donor == null ? '—' : '+91 ${donor.phone}',
-                      ),
-                      DetailRow(
-                        label: 'Units',
-                        value: receiver == null
-                            ? '—'
-                            : receiver.unitsNeeded.toString(),
-                      ),
-                      DetailRow(
-                        label: 'Patient',
-                        value: receiver?.name ?? '—',
-                      ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text('Progress', style: AppText.title(size: 15)),
+                    const SizedBox(height: 14),
+                    StatusTracker(steps: steps),
+                    const SizedBox(height: 30),
+                    ..._actions(context, req),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                Text('PROGRESS', style: AppText.label()),
-                const SizedBox(height: 14),
-                StatusTracker(steps: steps),
-                const SizedBox(height: 30),
-                ..._actions(context, req),
-              ],
+              ),
             ),
           ),
         ],
@@ -109,16 +119,38 @@ class ReceiverStatusScreen extends StatelessWidget {
   }
 
   List<Widget> _actions(BuildContext context, BloodRequest req) {
+    Future<void> advance(RequestStatus next, {bool popOnDone = false}) async {
+      if (_busy) return;
+      setState(() => _busy = true);
+      try {
+        await context.read<RequestProvider>().advance(req.id, next);
+        if (popOnDone && context.mounted) {
+          Navigator.of(context).maybePop();
+        }
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    }
+
+    Future<void> withdraw() async {
+      if (_busy) return;
+      setState(() => _busy = true);
+      try {
+        await context.read<RequestProvider>().withdraw(req.id);
+        if (context.mounted) Navigator.of(context).maybePop();
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    }
+
     switch (req.status) {
       case RequestStatus.pending:
         return [
           AppButton(
-            label: 'Withdraw request',
+            label: _busy ? 'Withdrawing' : 'Withdraw request',
             kind: AppButtonKind.outline,
-            onPressed: () async {
-              await context.read<RequestProvider>().withdraw(req.id);
-              if (context.mounted) Navigator.of(context).maybePop();
-            },
+            loading: _busy,
+            onPressed: _busy ? null : withdraw,
           ),
           const SizedBox(height: 10),
           Text(
@@ -132,13 +164,11 @@ class ReceiverStatusScreen extends StatelessWidget {
       case RequestStatus.arranged:
         return [
           AppButton(
-            label: 'Mark as received',
-            onPressed: () async {
-              await context
-                  .read<RequestProvider>()
-                  .advance(req.id, RequestStatus.completed);
-              if (context.mounted) Navigator.of(context).maybePop();
-            },
+            label: _busy ? 'Saving' : 'Mark as received',
+            loading: _busy,
+            onPressed: _busy
+                ? null
+                : () => advance(RequestStatus.completed, popOnDone: true),
           ),
         ];
       case RequestStatus.completed:

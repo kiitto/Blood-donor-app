@@ -73,8 +73,12 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
       return;
     }
 
+    final user = context.read<AuthProvider>().current;
+    if (user == null) {
+      _snack('Session expired — please log in again');
+      return;
+    }
     setState(() => _saving = true);
-    final user = context.read<AuthProvider>().current!;
     final token = await context.read<ReceiverProvider>().create(
           ownerEmail: user.email,
           name: _name.text.trim(),
@@ -83,7 +87,7 @@ class _ReceiverRegistrationScreenState extends State<ReceiverRegistrationScreen>
           phone: _phone.text.trim(),
           cause: _cause,
           causeOther: _causeOther.text.trim(),
-          unitsNeeded: int.parse(_units.text.trim()),
+          unitsNeeded: int.tryParse(_units.text.trim()) ?? 1,
         );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -243,7 +247,9 @@ class _CauseSelector extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('CAUSE / CONDITION', style: AppText.label()),
+        Text('Cause or condition',
+            style: AppText.caption(color: AppColors.inkMuted, size: 12)
+                .copyWith(fontWeight: FontWeight.w500)),
         const SizedBox(height: 10),
         Wrap(
           spacing: 8,

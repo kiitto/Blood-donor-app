@@ -35,7 +35,6 @@ class AppBottomNav extends StatelessWidget {
               icon: Icons.person_outline_rounded,
               active: current == BottomNavAction.profile,
               onTap: () => onTap(BottomNavAction.profile),
-              emphasized: true,
             ),
           ),
           Expanded(
@@ -56,14 +55,12 @@ class _NavItem extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool active;
-  final bool emphasized;
   final VoidCallback onTap;
   const _NavItem({
     required this.label,
     required this.icon,
     required this.active,
     required this.onTap,
-    this.emphasized = false,
   });
 
   @override
@@ -72,26 +69,11 @@ class _NavItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: emphasized ? 2 : 6),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: EdgeInsets.all(emphasized ? 9 : 0),
-              decoration: emphasized
-                  ? BoxDecoration(
-                      color: active ? AppColors.maroon : AppColors.surfaceMuted,
-                      shape: BoxShape.circle,
-                    )
-                  : null,
-              child: Icon(
-                icon,
-                color: emphasized
-                    ? (active ? AppColors.onMaroon : AppColors.ink)
-                    : color,
-                size: emphasized ? 20 : 22,
-              ),
-            ),
+            Icon(icon, color: color, size: 22),
             const SizedBox(height: 4),
             Text(
               label,

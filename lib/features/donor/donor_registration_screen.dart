@@ -60,12 +60,15 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
 
   Future<void> _pickLastDonation() async {
     final now = DateTime.now();
-    final initial =
+    final first = DateTime(now.year - 10);
+    var initial =
         _parseDate(_lastDonation.text) ?? now.subtract(const Duration(days: 90));
+    if (initial.isBefore(first)) initial = first;
+    if (initial.isAfter(now)) initial = now;
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
-      firstDate: DateTime(now.year - 10),
+      firstDate: first,
       lastDate: now,
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
@@ -99,8 +102,12 @@ class _DonorRegistrationScreenState extends State<DonorRegistrationScreen> {
     }
     if (!formOk) return;
 
+    final user = context.read<AuthProvider>().current;
+    if (user == null) {
+      _snack('Session expired — please log in again');
+      return;
+    }
     setState(() => _saving = true);
-    final user = context.read<AuthProvider>().current!;
     final token = await context.read<DonorProvider>().create(
           ownerEmail: user.email,
           name: _name.text.trim(),

@@ -5,9 +5,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../data/models/donor_model.dart';
-import '../../data/models/receiver_model.dart';
 import '../../data/models/request_model.dart';
-import '../../shared/widgets/app_button.dart';
 import '../../shared/widgets/app_header.dart';
 import '../../shared/widgets/blood_drop.dart';
 import '../../shared/widgets/card_shell.dart';
@@ -115,14 +113,11 @@ class ProfileScreen extends StatelessWidget {
                       labelColor: AppColors.maroon,
                       unselectedLabelColor: AppColors.inkMuted,
                       dividerColor: Colors.transparent,
-                      labelStyle: AppText.button(color: AppColors.maroon, size: 12)
-                          .copyWith(letterSpacing: 1.4),
-                      unselectedLabelStyle:
-                          AppText.button(color: AppColors.inkMuted, size: 12)
-                              .copyWith(letterSpacing: 1.4),
+                      labelStyle: AppText.bodyStrong(size: 13),
+                      unselectedLabelStyle: AppText.body(size: 13),
                       tabs: [
-                        Tab(text: 'Donor tokens (${donorTokens.length})'),
-                        Tab(text: 'Requests sent (${sentRequests.length})'),
+                        Tab(text: 'Tokens (${donorTokens.length})'),
+                        Tab(text: 'Requests (${sentRequests.length})'),
                       ],
                     ),
                   ),
@@ -184,10 +179,15 @@ class _WelcomeCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('WELCOME',
-                          style: AppText.label(color: AppColors.inkMuted, size: 10)),
+                      Text('Welcome',
+                          style: AppText.caption(color: AppColors.inkMuted, size: 12)),
                       const SizedBox(height: 2),
-                      Text(name, style: AppText.headline(size: 24)),
+                      Text(
+                        name,
+                        style: AppText.headline(size: 24),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -409,8 +409,7 @@ class _StatusPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        border: Border.all(color: color.withOpacity(0.35), width: 1),
+        border: Border.all(color: AppColors.hairline, width: 1),
       ),
       child: Text(
         label,

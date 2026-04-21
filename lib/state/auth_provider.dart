@@ -12,7 +12,14 @@ class AuthProvider extends ChangeNotifier {
   bool get needsProfileSetup => _current != null && !_current!.profileComplete;
 
   void init() {
-    _current = _repo.currentUser();
+    try {
+      _current = _repo.currentUser();
+    } catch (_) {
+      // Corrupt or schema-drifted session — clear it so the app boots to login
+      // instead of crashing on a malformed cached user.
+      _repo.logOut();
+      _current = null;
+    }
     notifyListeners();
   }
 

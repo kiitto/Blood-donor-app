@@ -24,10 +24,10 @@ class DetailRow extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 104,
+              width: 88,
               child: Text(
-                label.toUpperCase(),
-                style: AppText.label(color: AppColors.inkMuted, size: 10.5),
+                label,
+                style: AppText.caption(color: AppColors.inkMuted, size: 12),
               ),
             ),
             const SizedBox(width: 8),
@@ -37,6 +37,9 @@ class DetailRow extends StatelessWidget {
                 style: strong
                     ? AppText.bodyStrong(color: valueColor ?? AppColors.ink)
                     : AppText.body(color: valueColor ?? AppColors.ink),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                softWrap: true,
               ),
             ),
           ],

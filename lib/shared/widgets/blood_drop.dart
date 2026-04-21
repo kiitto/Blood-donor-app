@@ -54,19 +54,6 @@ class _DropPainter extends CustomPainter {
       );
     } else {
       canvas.drawPath(path, Paint()..color = color);
-      // Tiny highlight notch — subtle, readable, not a glossy AI sheen.
-      final highlight = Path()
-        ..moveTo(w * 0.32, h * 0.55)
-        ..arcToPoint(
-          Offset(w * 0.32, h * 0.80),
-          radius: Radius.circular(w * 0.12),
-          clockwise: false,
-        )
-        ..close();
-      canvas.drawPath(
-        highlight,
-        Paint()..color = Colors.white.withOpacity(0.22),
-      );
     }
   }
 
