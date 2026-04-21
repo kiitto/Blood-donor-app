@@ -4,7 +4,7 @@ A Flutter app that helps people find blood donors — fast — when someone they
 
 The idea is simple: people lose their lives every year because the chain of "who knows a donor" is slow and ad-hoc. This app collapses that chain. Open the app, register yourself as a donor in a minute, or register a patient and see compatible donors nearby with a way to reach them. No paperwork, no phone trees.
 
-Built as a college capstone Review 1 prototype. Local-only persistence for the demo (Hive), with the architecture already shaped so we can swap to Firebase Auth + Firestore for Review 2 without rewriting screens.
+Built as an Android development mini project. Local-only persistence for the demo (Hive), with the architecture already shaped so Firebase Auth + Firestore can be swapped in later without rewriting screens.
 
 > **The code walkthrough lives in [CODEBASE.md](CODEBASE.md).** Read that if you want to understand how it all fits together or how to add features.
 
@@ -44,13 +44,13 @@ Here's what you can actually do, step by step:
 
 | Layer | Choice | Why |
 |---|---|---|
-| UI | **Flutter 3.41** (Material 3) | Single codebase; Android for Review 1, iOS later if needed |
+| UI | **Flutter 3.41** (Material 3) | Single codebase; Android is the target, iOS later if needed |
 | Language | **Dart 3.11** | Sound null safety, switch expressions, modern records |
 | State | **Provider** | Officially recommended, minimal boilerplate, plays nicely with Hive streams |
 | Local DB | **Hive** with dynamic boxes | Mirrors Firestore's document shape; zero `build_runner`; survives restarts |
 | Location | **geolocator + geocoding** | Real GPS reverse-geocoding with graceful fallback to manual text entry |
 | Fonts | **Google Fonts** (Fraunces + Inter + JetBrains Mono) | Editorial, not the generic Roboto default |
-| Hashing | **crypto** (SHA-256 + per-user salt) | Demo-grade password storage; Firebase Auth takes over in Review 2 |
+| Hashing | **crypto** (SHA-256 + per-user salt) | Demo-grade password storage; Firebase Auth takes over in a later iteration |
 
 **What we chose not to use:**
 - **Riverpod / Bloc** — Provider is enough for 4 entities
@@ -109,7 +109,7 @@ Size: about 150 MB debug. A release build (`flutter build apk --release`) shrink
 
 ## Demo walkthrough (3 min, one phone)
 
-Great for a Review 1 presentation:
+Great for a mini-project demo:
 
 1. **Splash → Login** — auto-advances.
 2. **Sign up** with something like `demo@example.in` / `Demo@12345`. Watch the strength meter hit "Strong" as you type.
@@ -251,7 +251,7 @@ The donor's internal `contacted` phase is folded into the receiver's "Blood arra
 
 All four repositories in `lib/data/repositories/` are the single seam between storage and the rest of the app. Providers and screens never import `package:hive` directly — they only call repository methods.
 
-To graduate past Review 1:
+To graduate past the local-only demo:
 
 1. Add Firebase: `firebase_core`, `firebase_auth`, `cloud_firestore`.
 2. Run `flutterfire configure` to generate `firebase_options.dart`.
@@ -267,7 +267,7 @@ Everything else stays identical. Estimated migration: half a day.
 
 ## Known caveats (things to know before the demo)
 
-- **Passwords** are SHA-256 with a per-user random salt. Fine for a local-only demo; Firebase Auth replaces this in Review 2.
+- **Passwords** are SHA-256 with a per-user random salt. Fine for a local-only demo; Firebase Auth will replace this once the backend is wired up.
 - **Seed donors** have `ownerEmail = seed@community.local` — not a real user. Requests sent to seeds stay "Awaiting donor" forever. To demo accept/decline, create a second real account.
 - **Google Fonts on first launch** needs network for ~100 KB. Subsequent launches are offline.
 - **Hive data persists** between runs. To reset for a clean demo: uninstall and reinstall, or hook `HiveBoxes.clearAll()` to a dev-only debug button.
@@ -285,4 +285,4 @@ Longer version lives in [CODEBASE.md](CODEBASE.md#how-to-add-a-feature).
 
 ## Credits
 
-Built as a college capstone project. UI mockups in Figma, implementation in Flutter + Dart 3. Review 1 submission.
+Built as an Android development mini project. UI mockups in Figma, implementation in Flutter + Dart 3.
