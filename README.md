@@ -112,7 +112,7 @@ Size: about 150 MB debug. A release build (`flutter build apk --release`) shrink
 Great for a Review 1 presentation:
 
 1. **Splash → Login** — auto-advances.
-2. **Sign up** with something like `suraj@demo.in` / `Demo@12345`. Watch the strength meter hit "Strong" as you type.
+2. **Sign up** with something like `demo@example.in` / `Demo@12345`. Watch the strength meter hit "Strong" as you type.
 3. **Profile setup** — type `Bengaluru` and pick from the autocomplete dropdown. Fill phone, DOB. Save.
 4. **Dashboard** — point out the two role cards and the location ribbon.
 5. **Receive flow** — tap Receive. Register a patient: name, `B+`, 2 units, Cause = Surgery. Save.
@@ -285,4 +285,4 @@ Longer version lives in [CODEBASE.md](CODEBASE.md#how-to-add-a-feature).
 
 ## Credits
 
-Built as a college capstone project by [Suraj-B12](https://github.com/Suraj-B12) and team. UI mockups in Figma, implementation in Flutter + Dart 3. Review 1 submission.
+Built as a college capstone project. UI mockups in Figma, implementation in Flutter + Dart 3. Review 1 submission.
